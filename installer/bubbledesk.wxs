@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+      Name="BubbleDesk"
+      Manufacturer="Hafizh Ammar Muflih"
+      Version="$(var.Version)"
+      UpgradeCode="9e4f3b72-4a8c-4c5d-9d21-7f1a2b3c4d5e"
+      Scope="perUser"
+      Compressed="yes"
+      InstallerVersion="500">
+
+    <MajorUpgrade DowngradeErrorMessage="Versi BubbleDesk yang lebih baru sudah terpasang." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="assets\app.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/NHWK-cpu/BubbleDesk" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="BubbleDesk" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppMenuFolder" Name="BubbleDesk" />
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="BubbleDesk" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="UninstallRegistryCleanup" />
+    </Feature>
+
+    <!-- Jalankan pembersihan ikon & autostart sebelum file dihapus saat uninstall -->
+    <CustomAction
+        Id="UninstallCleanup"
+        FileRef="BubbleDeskExe"
+        ExeCommand="--uninstall-cleanup"
+        Execute="deferred"
+        Impersonate="yes"
+        Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="UninstallCleanup" Before="RemoveFiles" Condition="REMOVE=&quot;ALL&quot;" />
+    </InstallExecuteSequence>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Component Id="MainExe" Guid="b71e2a10-6c4f-4a81-9e12-112233445566">
+        <File Id="BubbleDeskExe" Source="$(var.ExePath)" KeyPath="yes" />
+      </Component>
+      <Component Id="DocsAndLicense" Guid="c82f3b21-7d5a-4b92-8f23-223344556677">
+        <File Id="ReadmeFile" Source="README.md" KeyPath="yes" />
+        <File Id="LicenseFile" Source="LICENSE" />
+      </Component>
+    </ComponentGroup>
+
+    <Component Id="StartMenuShortcut" Directory="AppMenuFolder" Guid="d93a4c32-8e6b-4c03-9a34-334455667788">
+      <Shortcut
+          Id="BubbleDeskShortcut"
+          Name="BubbleDesk"
+          Description="Wallpaper hidup berisi bubble untuk item desktop Windows"
+          Target="[INSTALLFOLDER]bubbledesk.exe"
+          WorkingDirectory="INSTALLFOLDER"
+          Icon="AppIcon" />
+      <RemoveFolder Id="RemoveAppMenuFolder" On="uninstall" />
+      <RegistryValue
+          Root="HKCU"
+          Key="Software\BubbleDesk"
+          Name="installed"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+    </Component>
+
+    <Component Id="UninstallRegistryCleanup" Directory="INSTALLFOLDER" Guid="e04b5d43-9f7c-4d14-ab45-445566778899">
+      <RemoveRegistryValue
+          Root="HKCU"
+          Key="Software\Microsoft\Windows\CurrentVersion\Run"
+          Name="BubbleDesk" />
+      <RegistryValue
+          Root="HKCU"
+          Key="Software\BubbleDesk"
+          Name="cleanup_marker"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+    </Component>
+  </Fragment>
+</Wix>
